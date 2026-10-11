@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Compass Error TITANIA</title>
+<meta name="theme-color" content="#0b6e8a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Compass Err">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+/* Layout: bridge-console tool — input panel left, book row + checks right; stacks on phone */
+:root{
+  --bg:#eef1f3; --panel:#ffffff; --ink:#15212b; --muted:#5b6b78; --line:#d3dbe1;
+  --accent:#0b6e8a; --accent-ink:#ffffff; --field:#f7f9fa;
+  --ok:#1d7a46; --ok-bg:#e3f3ea; --warn:#9a6200; --warn-bg:#fdf1d8; --bad:#b3261e; --bad-bg:#fbe4e2;
+  --f-display:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-data:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e161c; --panel:#152129; --ink:#e3ebf0; --muted:#93a4b0; --line:#26353f;
+  --accent:#4cb6d4; --accent-ink:#06222b; --field:#101a21;
+  --ok:#6fd39a; --ok-bg:#12301f; --warn:#f0c065; --warn-bg:#33270c; --bad:#ff8f86; --bad-bg:#3a1513; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e161c; --panel:#152129; --ink:#e3ebf0; --muted:#93a4b0; --line:#26353f;
+  --accent:#4cb6d4; --accent-ink:#06222b; --field:#101a21;
+  --ok:#6fd39a; --ok-bg:#12301f; --warn:#f0c065; --warn-bg:#33270c; --bad:#ff8f86; --bad-bg:#3a1513; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 40px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px;margin-bottom:18px}
+h1{font-family:var(--f-display);font-weight:700;font-size:1.7rem;letter-spacing:.01em;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:.9rem}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
+h2{font-family:var(--f-display);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0 0 10px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--muted);font-weight:500;min-width:0}
+input,select{font:inherit;font-family:var(--f-data);font-size:.92rem;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:5px;padding:7px 8px;width:100%;min-width:0}
+input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pos{display:grid;grid-template-columns:52px 1fr 58px;gap:6px}
+.trow{display:flex;gap:6px;align-items:stretch}
+.trow input{flex:1}
+.seg{display:flex;flex:none;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:6px 9px;font-size:.8rem}
+button{font:inherit;font-family:var(--f-display);font-weight:600;font-size:.9rem;border-radius:5px;padding:7px 10px;cursor:pointer;border:1px solid var(--line);background:var(--field);color:var(--ink)}
+button.on,button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.hint{font-size:.78rem;color:var(--muted)}
+.section{display:flex;flex-direction:column;gap:12px}
+.stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:.85rem;color:var(--accent)}
+.card8{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.book th,.book td{border:1px solid var(--ink);padding:6px 6px;text-align:center;font-size:.82rem}
+.book th{font-family:var(--f-display);font-weight:600;background:var(--field)}
+.book td{font-family:var(--f-data);font-size:.85rem;white-space:nowrap}
+.book td.rm{white-space:normal;text-align:left;font-family:var(--f-body);min-width:220px}
+.book .cap{font-family:var(--f-display);letter-spacing:.06em;font-size:.78rem}
+.blank{color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--field)}
+.kpi .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-family:var(--f-display)}
+.kpi .v{font-family:var(--f-data);font-size:1.25rem;font-weight:600;margin-top:2px}
+.kpi .n{font-size:.75rem;color:var(--muted)}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:.88rem}
+.pill{flex:none;font-family:var(--f-display);font-weight:700;font-size:.72rem;letter-spacing:.06em;padding:2px 8px;border-radius:99px;margin-top:1px}
+.p-ok{background:var(--ok-bg);color:var(--ok)} .p-warn{background:var(--warn-bg);color:var(--warn)} .p-bad{background:var(--bad-bg);color:var(--bad)}
+.objs td,.objs th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:.84rem}
+.objs td.num{font-family:var(--f-data);text-align:right}
+.objs th{font-family:var(--f-display);font-weight:600;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
+.objs tr.sel td{background:var(--field);font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.calc{font-family:var(--f-data);font-size:.8rem;color:var(--muted);line-height:1.7;white-space:pre-wrap;margin:0}
+.ex{display:inline-block;font-family:var(--f-display);font-size:.72rem;letter-spacing:.06em;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:2px 8px;border-radius:99px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div>
+    <h1>Compass Error · MT TITANIA</h1>
+    <div class="sub">Enter the observation; results fill the compass error book columns.</div>
+  </div>
+</header>
+
+<div class="grid">
+  <!-- INPUT -->
+  <form class="panel section" id="f" autocomplete="off">
+    <h2>Observation</h2>
+    <div class="fields">
+      <label>Date<input type="date" id="date" value="2026-10-05"></label>
+      <label>Time<span class="trow"><input type="time" id="time" value="10:58"><span class="seg" role="group" aria-label="Time zone"><button type="button" id="tzLocal" class="on" title="Local time UTC+8">LT</button><button type="button" id="tzUtc" title="Universal time">UTC</button></span></span></label>
+      <label class="full">Latitude
+        <span class="pos"><input id="latD" type="number" min="0" max="89" value="1" aria-label="Lat degrees"><input id="latM" type="number" step="0.001" min="0" max="59.999" value="17.783" aria-label="Lat minutes"><select id="latH" aria-label="N/S"><option>N</option><option>S</option></select></span>
+      </label>
+      <label class="full">Longitude
+        <span class="pos"><input id="lonD" type="number" min="0" max="179" value="103" aria-label="Long degrees"><input id="lonM" type="number" step="0.001" min="0" max="59.999" value="57.028" aria-label="Long minutes"><select id="lonH" aria-label="E/W"><option>E</option><option>W</option></select></span>
+      </label>
+      <label>Gyro heading (°)<input id="gHdg" type="number" step="0.1" value="91.3"></label>
+      <label>Magnetic heading (°)<input id="mHdg" type="number" step="0.1" value="95.2"></label>
+      <label class="full">Steering compass heading (°) <span class="hint">optional</span><input id="sHdg" type="number" step="0.1" placeholder="leave blank if not read"></label>
+      <label class="full">Object observed<select id="obj"></select></label>
+      <div class="full fields" id="customBox" hidden>
+        <label>Object lat (decimal °)<input id="cLat" type="number" step="0.00001" placeholder="1.30907"></label>
+        <label>Object long (decimal °)<input id="cLon" type="number" step="0.00001" placeholder="103.93272"></label>
+        <label class="full">Object name<input id="cName" type="text" placeholder="name on chart"></label>
+      </div>
+      <label class="full">Obs. gyro bearing to object (°)<input id="obs" type="number" step="0.1" placeholder="read from azimuth circle"></label>
+    </div>
+
+    <details>
+      <summary>Variation &amp; deviation card settings</summary>
+      <div class="fields" style="margin-top:10px">
+        <label>Chart variation (°, + = E)<input id="varBase" type="number" step="0.1" value="0.2"></label>
+        <label>Reference year<input id="varYear" type="number" value="2020"></label>
+        <label class="full">Annual change (minutes, + = towards E)<input id="varAnn" type="number" step="0.5" value="-2"></label>
+      </div>
+      <p class="hint" style="margin:12px 0 0">Deviation card 18-09-26 (+ = E, − = W), linearly interpolated:</p>
+      <div class="card8" id="cardBox"></div>
+    </details>
+  </form>
+
+  <!-- OUTPUT -->
+  <div class="stack">
+    <section class="panel">
+      <h2>Summary</h2>
+      <div class="kpis" id="kpis"></div>
+    </section>
+
+    <section class="panel">
+      <div class="row" style="margin-bottom:10px">
+        <h2 style="margin:0">Book entry</h2>
+        <button type="button" class="primary" id="copyBtn">Copy row</button>
+      </div>
+      <div class="scroll">
+        <table class="book" id="bookMag"></table>
+      </div>
+      <div class="scroll" style="margin-top:12px">
+        <table class="book" id="bookGyro"></table>
+      </div>
+      <textarea id="copySrc" class="hint" style="margin-top:10px;width:100%;font-family:var(--f-data);background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:5px" rows="2" readonly hidden></textarea>
+    </section>
+
+    <section class="panel">
+      <h2>Checks</h2>
+      <ul class="checks" id="checks"></ul>
+    </section>
+
+
+    <section class="panel">
+      <h2>Working</h2>
+      <pre class="calc" id="steps"></pre>
+    </section>
+  </div>
+</div>
+</div>
+
+<script>
+const OBJECTS=[
+  {id:"o0",name:"Amber Beacon",lat:1.297867,lon:103.905783,g:"A"},
+  {id:"o1",name:"Ayer Beacon",lat:1.268117,lon:103.706683,g:"B"},
+  {id:"o2",name:"Batu Kopi Beacon",lat:1.223150,lon:103.779617,g:"C"},
+  {id:"o3",name:"Bedok Lighthouse",lat:1.309067,lon:103.932750,g:"A"},
+  {id:"o4",name:"Buran Beacon",lat:1.252350,lon:103.848650,g:"C"},
+  {id:"o5",name:"Busing Beacon",lat:1.236667,lon:103.738417,g:"B"},
+  {id:"o6",name:"Changi Beacon",lat:1.319017,lon:104.034567,g:"A"},
+  {id:"o7",name:"Chombun Beacon",lat:1.291483,lon:103.694783,g:"C"},
+  {id:"o8",name:"Cyrene Beacon",lat:1.255000,lon:103.758967,g:"B"},
+  {id:"o9",name:"Esso Beacon",lat:1.284883,lon:103.698333,g:"B"},
+  {id:"o10",name:"First Bukom Beacon",lat:1.237683,lon:103.772283,g:"C"},
+  {id:"o11",name:"Frontier Beacon",lat:1.314717,lon:104.059233,g:"B"},
+  {id:"o12",name:"Gerita Beacon",lat:1.223617,lon:103.724717,g:"B"},
+  {id:"o13",name:"He-Ent Beacon",lat:1.228317,lon:103.669767,g:"B"},
+  {id:"o14",name:"Jambi West Beacon",lat:1.203067,lon:103.793617,g:"C"},
+  {id:"o15",name:"Jong Beacon",lat:1.213900,lon:103.789667,g:"C"},
+  {id:"o16",name:"Keta Beacon",lat:1.305250,lon:103.967983,g:"B"},
+  {id:"o17",name:"Kias Beacon",lat:1.232283,lon:103.845417,g:"B"},
+  {id:"o18",name:"Kukor Beacon",lat:1.240117,lon:103.849083,g:"B"},
+  {id:"o19",name:"Lube Park Front Beacon",lat:1.275083,lon:103.609850,g:"B"},
+  {id:"o20",name:"Lube Park Rear Beacon",lat:1.274900,lon:103.609783,g:"B"},
+  {id:"o21",name:"MD 0",lat:1.232083,lon:103.685217,g:"B"},
+  {id:"o22",name:"MD 21",lat:1.239167,lon:103.691417,g:"B"},
+  {id:"o23",name:"MSP 1 Beacon",lat:1.271117,lon:103.867183,g:"B"},
+  {id:"o24",name:"MSP 2 Beacon",lat:1.269967,lon:103.868017,g:"B"},
+  {id:"o25",name:"MSP 3 Beacon",lat:1.267750,lon:103.864950,g:"B"},
+  {id:"o26",name:"North Semakau Beacon",lat:1.218983,lon:103.758783,g:"B"},
+  {id:"o27",name:"North-East Semakau Beacon",lat:1.210683,lon:103.780067,g:"C"},
+  {id:"o28",name:"OTB Front Beacon",lat:1.236883,lon:103.751067,g:"C"},
+  {id:"o29",name:"OTB Rear Beacon",lat:1.236183,lon:103.750167,g:"B"},
+  {id:"o30",name:"Palawan Beacon",lat:1.249467,lon:103.814933,g:"B"},
+  {id:"o31",name:"Pandan Beacon",lat:1.257667,lon:103.742233,g:"B"},
+  {id:"o32",name:"Pauh Beacon",lat:1.222933,lon:103.749917,g:"B"},
+  {id:"o33",name:"Pempang Beacon",lat:1.228067,lon:103.740883,g:"B"},
+  {id:"o34",name:"Raffles Lighthouse",lat:1.160100,lon:103.740833,g:"A"},
+  {id:"o35",name:"Renget Beacon",lat:1.226583,lon:103.846717,g:"B"},
+  {id:"o36",name:"Retan Satu Beacon",lat:1.292800,lon:103.757000,g:"C"},
+  {id:"o37",name:"Rimau Beacon",lat:1.259900,lon:103.806567,g:"B"},
+  {id:"o38",name:"SE Buran Beacon",lat:1.237533,lon:103.841367,g:"B"},
+  {id:"o39",name:"Sakijang Beacon",lat:1.221750,lon:103.854583,g:"A"},
+  {id:"o40",name:"Selegi Beacon",lat:1.226317,lon:103.826567,g:"B"},
+  {id:"o41",name:"Semakau Light",lat:1.209783,lon:103.777617,g:"B"},
+  {id:"o42",name:"Semaphore Tower (Pulau Satumu)",lat:1.160883,lon:103.741183,g:"A"},
+  {id:"o43",name:"Sentosa Beacon",lat:1.237267,lon:103.833100,g:"B"},
+  {id:"o44",name:"Serebut Beacon",lat:1.247217,lon:103.701467,g:"B"},
+  {id:"o45",name:"Sinki Beacon",lat:1.234133,lon:103.721817,g:"B"},
+  {id:"o46",name:"South Bukom Beacon",lat:1.219883,lon:103.780683,g:"C"},
+  {id:"o47",name:"South Changi Beacon",lat:1.315200,lon:103.976750,g:"B"},
+  {id:"o48",name:"South Cyrene Beacon",lat:1.254000,lon:103.751317,g:"C"},
+  {id:"o49",name:"Sudong Beacon (Disused)",lat:1.211000,lon:103.714067,g:"B"},
+  {id:"o50",name:"Sultan Shoal Lighthouse",lat:1.239617,lon:103.648067,g:"A"},
+  {id:"o51",name:"TP1 Beacon (Jetty West End)",lat:1.278483,lon:103.643367,g:"C"},
+  {id:"o52",name:"TP2 Beacon (Jetty East End)",lat:1.279567,lon:103.649533,g:"C"},
+  {id:"o53",name:"Tanah Merah Beacon",lat:1.312100,lon:103.983967,g:"B"},
+  {id:"o54",name:"Tembakul Beacon",lat:1.222333,lon:103.862583,g:"B"},
+  {id:"o55",name:"Tuas East Beacon (Jetty East End)",lat:1.286383,lon:103.612683,g:"C"},
+  {id:"o56",name:"Tuas West Beacon (Jetty West End)",lat:1.287417,lon:103.612250,g:"C"},
+  {id:"o57",name:"Vopak 2 Beacon (P. Sebarok jetty 5)",lat:1.201200,lon:103.797850,g:"C"}
+];
+const CARD_HDG=[0,45,90,135,180,225,270,315];
+const CARD_DEV=[-1,1,-1,1,1,-1,1,-1];
+const $=id=>document.getElementById(id);
+let tz="local";
+
+// populate selects
+const objSel=$("obj");
+let lastKey="";
+// Rebuild the object list sorted by distance from the ship; keeps the current choice.
+function rebuildList(lat,lon){
+  const key=lat===null||lon===null?"none":lat.toFixed(3)+","+lon.toFixed(3);
+  if(key===lastKey)return; lastKey=key;
+  const cur=objSel.value; objSel.innerHTML="";
+  const withD=OBJECTS.map(o=>({...o,nm:(lat===null||lon===null)?null:inv(lat,lon,o.lat,o.lon).d/1852}));
+  const groups=[["Recommended (1–6 NM)",x=>x.nm>=1&&x.nm<=6],["Too close (under 1 NM)",x=>x.nm<1],["Farther (6–12 NM)",x=>x.nm>6&&x.nm<=12]];
+  if(lat===null||lon===null){withD.sort((a,b)=>a.name.localeCompare(b.name));withD.forEach(o=>objSel.add(new Option(o.name,o.id)));}
+  else{
+    withD.sort((a,b)=>a.nm-b.nm);
+    groups.forEach(([label,f])=>{const items=withD.filter(f);if(!items.length)return;
+      const og=document.createElement("optgroup");og.label=label;
+      items.forEach(o=>og.appendChild(new Option(`${o.name} · ${o.nm.toFixed(1)} NM · ${o.g}`,o.id)));objSel.appendChild(og);});
+  }
+  objSel.add(new Option("Other object (enter coordinates)","custom"));
+  const ids=[...objSel.options].map(o=>o.value);
+  if(ids.includes(cur))objSel.value=cur;
+  else{const best=withD.filter(x=>x.nm!==null&&x.nm>=1&&x.nm<=6).sort((a,b)=>(a.g>b.g)-(a.g<b.g)||a.nm-b.nm)[0];
+    objSel.value=best?best.id:objSel.options[0].value;}
+}
+const cardBox=$("cardBox");
+CARD_HDG.forEach((h,i)=>{const l=document.createElement("label");l.textContent=String(h).padStart(3,"0")+"°";
+  const inp=document.createElement("input");inp.type="number";inp.step="0.1";inp.value=CARD_DEV[i];inp.id="cd"+h;l.appendChild(inp);cardBox.appendChild(l)});
+
+const n=v=>{const x=parseFloat(v);return isFinite(x)?x:null};
+const norm=a=>((a%360)+360)%360;
+const sdiff=a=>{let d=norm(a);return d>180?d-360:d}; // signed -180..180
+const f3=a=>norm(a).toFixed(1).padStart(5,"0");
+const ew=v=>Math.abs(v)<0.05?"0.0°":Math.abs(v).toFixed(1)+"°"+(v>0?"E":"W");
+const hl=v=>Math.abs(v)<0.05?"0.0°":Math.abs(v).toFixed(1)+"° "+(v>0?"Low":"High");
+
+// Vincenty inverse, WGS84
+function inv(lat1,lon1,lat2,lon2){
+  const a=6378137,f=1/298.257223563,b=a*(1-f),r=Math.PI/180;
+  const L=(lon2-lon1)*r,U1=Math.atan((1-f)*Math.tan(lat1*r)),U2=Math.atan((1-f)*Math.tan(lat2*r));
+  const sU1=Math.sin(U1),cU1=Math.cos(U1),sU2=Math.sin(U2),cU2=Math.cos(U2);
+  let lam=L,lp,sS,cS,sig,sA,c2A,c2Sm,i=0;
+  do{const sL=Math.sin(lam),cL=Math.cos(lam);
+    sS=Math.hypot(cU2*sL,cU1*sU2-sU1*cU2*cL); if(sS===0)return{d:0,az:0};
+    cS=sU1*sU2+cU1*cU2*cL; sig=Math.atan2(sS,cS); sA=cU1*cU2*sL/sS; c2A=1-sA*sA;
+    c2Sm=c2A?cS-2*sU1*sU2/c2A:0; const C=f/16*c2A*(4+f*(4-3*c2A));
+    lp=lam; lam=L+(1-C)*f*sA*(sig+C*sS*(c2Sm+C*cS*(-1+2*c2Sm*c2Sm)));
+  }while(Math.abs(lam-lp)>1e-12&&++i<200);
+  const u2=c2A*(a*a-b*b)/(b*b),A=1+u2/16384*(4096+u2*(-768+u2*(320-175*u2))),B=u2/1024*(256+u2*(-128+u2*(74-47*u2)));
+  const dS=B*sS*(c2Sm+B/4*(cS*(-1+2*c2Sm*c2Sm)-B/6*c2Sm*(-3+4*sS*sS)*(-3+4*c2Sm*c2Sm)));
+  const az=Math.atan2(cU2*Math.sin(lam),cU1*sU2-sU1*cU2*Math.cos(lam))/r;
+  return{d:b*A*(sig-dS),az:norm(az)};
+}
+function cardDev(h){
+  const dev=CARD_HDG.map(x=>n($("cd"+x).value)??0);
+  h=norm(h);const i=Math.floor(h/45)%8,j=(i+1)%8,t=(h-i*45)/45;
+  return dev[i]+(dev[j]-dev[i])*t;
+}
+function pill(cls,txt){return `<span class="pill ${cls}">${txt}</span>`}
+
+function calc(){
+  const date=$("date").value,time=$("time").value;
+  const latD=n($("latD").value),latM=n($("latM").value),lonD=n($("lonD").value),lonM=n($("lonM").value);
+  const gH=n($("gHdg").value),mH=n($("mHdg").value),sH=n($("sHdg").value),obs=n($("obs").value);
+  const lat=(latD!==null&&latM!==null)?(latD+latM/60)*($("latH").value==="S"?-1:1):null;
+  const lon=(lonD!==null&&lonM!==null)?(lonD+lonM/60)*($("lonH").value==="W"?-1:1):null;
+
+  // UTC
+  let utcDate="—",gmt="—",dt=null;
+  if(date&&time){const [Y,M,D]=date.split("-").map(Number),[h,mi]=time.split(":").map(Number);
+    dt=new Date(Date.UTC(Y,M-1,D,h,mi)-(tz==="local"?8*3600e3:0));
+    utcDate=`${String(dt.getUTCDate()).padStart(2,"0")}-${String(dt.getUTCMonth()+1).padStart(2,"0")}-${String(dt.getUTCFullYear()).slice(2)}`;
+    gmt=String(dt.getUTCHours()).padStart(2,"0")+String(dt.getUTCMinutes()).padStart(2,"0");}
+
+  // variation
+  const vb=n($("varBase").value)??0,vy=n($("varYear").value)??2020,va=n($("varAnn").value)??0;
+  const yrs=dt?(dt.getUTCFullYear()+(dt-Date.UTC(dt.getUTCFullYear(),0,1))/(365.25*864e5))-vy:0;
+  const variation=vb+yrs*va/60;
+
+  rebuildList(lat,lon);
+  const isCustom=objSel.value==="custom"; $("customBox").hidden=!isCustom;
+  let obj=OBJECTS.find(o=>o.id===objSel.value);
+  if(isCustom){const la=n($("cLat").value),lo=n($("cLon").value);obj=(la!==null&&lo!==null)?{name:$("cName").value||"Other object",lat:la,lon:lo}:null}
+
+  // core
+  let tb=null,dist=null;
+  if(obj&&lat!==null&&lon!==null){const r=inv(lat,lon,obj.lat,obj.lon);tb=r.az;dist=r.d/1852}
+  const gErr=(tb!==null&&obs!==null)?sdiff(tb-obs):null;            // + = Low
+  const magObs=(obs!==null&&gH!==null&&mH!==null)?norm(obs+sdiff(mH-gH)):null;
+  const cErr=(tb!==null&&magObs!==null)?sdiff(tb-magObs):null;       // + = E
+  const dev=cErr!==null?cErr-variation:null;
+  const cDev=mH!==null?cardDev(mH):null;
+  const dDiff=(dev!==null&&cDev!==null)?dev-cDev:null;
+  const steerDiff=(sH!==null&&mH!==null)?sdiff(sH-mH):null;
+  const B=v=>v===null?'<span class="blank">—</span>':v;
+
+  // KPIs
+  $("kpis").innerHTML=[
+    ["Gyro error",gErr===null?"—":hl(gErr),"True − Obs gyro"],
+    ["Compass error",cErr===null?"—":ew(cErr),"True − Obs magnetic"],
+    ["Deviation",dev===null?"—":ew(dev),"Err − Var"],
+    ["Card at this heading",cDev===null?"—":ew(cDev),mH===null?"":"heading "+f3(mH)+"°"],
+  ].map(k=>`<div class="kpi"><div class="k">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
+
+  // remarks
+  const rm=[];
+  if(obj)rm.push(`Brg ${obj.name}${dist!==null?" "+dist.toFixed(2)+" NM":""}.`);
+  if(dDiff!==null&&Math.abs(dDiff)>2)rm.push(`Dev ${ew(dev)} vs card ${ew(cDev)}, to be verified.`);
+  if(gErr!==null&&Math.abs(gErr)>1)rm.push(`Gyro error exceeds 1°, reported.`);
+  const remarks=rm.join(" ");
+
+  const fmtLat=lat===null?null:`${String(Math.floor(Math.abs(lat))).padStart(2,"0")}°${((Math.abs(lat)%1)*60).toFixed(1).padStart(4,"0")}'${lat<0?"S":"N"}`;
+  const fmtLon=lon===null?null:`${String(Math.floor(Math.abs(lon))).padStart(3,"0")}°${((Math.abs(lon)%1)*60).toFixed(1).padStart(4,"0")}'${lon<0?"W":"E"}`;
+  const mag=[utcDate,gmt,fmtLat,fmtLon,mH===null?null:f3(mH)+"°",sH===null?null:f3(sH)+"°",magObs===null?null:f3(magObs)+"°",tb===null?null:f3(tb)+"°",cErr===null?null:ew(cErr),ew(variation),dev===null?null:ew(dev)];
+  const gyr=[gH===null?null:f3(gH)+"°",obs===null?null:f3(obs)+"°",tb===null?null:f3(tb)+"°",gErr===null?null:hl(gErr),null,remarks||null];
+
+  $("bookMag").innerHTML=`<tr><th colspan="11" class="cap">MAGNETIC COMPASS</th></tr>
+   <tr><th rowspan="2">Date</th><th rowspan="2">Gmt.</th><th rowspan="2">Lat.</th><th rowspan="2">Long.</th><th colspan="2">Ship's Head By</th><th rowspan="2">Obs.<br>Brg.</th><th rowspan="2">True<br>Brg.</th><th rowspan="2">Err.</th><th rowspan="2">Var.</th><th rowspan="2">Dev.</th></tr>
+   <tr><th>Stand.</th><th>Steer.</th></tr><tr>${mag.map(B).map(v=>`<td>${v}</td>`).join("")}</tr>`;
+  $("bookGyro").innerHTML=`<tr><th colspan="5" class="cap">GYRO COMPASS</th><th rowspan="2">REMARKS</th></tr>
+   <tr><th>Ship's<br>Head</th><th>Obs.<br>Brg.</th><th>True<br>Brg.</th><th>Error</th><th>Observer<br>Rank/Sign</th></tr>
+   <tr>${gyr.map(B).map((v,i)=>`<td class="${i===5?"rm":""}">${v}</td>`).join("")}</tr>`;
+  $("copySrc").value=[...mag,...gyr].map(v=>v??"").join("\t");
+
+  // checks
+  const ch=[];
+  if(dist!==null)ch.push(dist<1?[pill("p-warn","CAUTION"),`Object only ${dist.toFixed(2)} NM away. Result less reliable; use an object beyond 1 NM where possible.`]:[pill("p-ok","OK"),`Object distance ${dist.toFixed(2)} NM.`]);
+  if(gErr!==null)ch.push(Math.abs(gErr)>1?[pill("p-bad","REPORT"),`Gyro error ${hl(gErr)} exceeds 1°. Repeat the bearing; if it persists, report to the Master.`]:[pill("p-ok","OK"),`Gyro error ${hl(gErr)} within normal limits.`]);
+  if(dDiff!==null){const a=Math.abs(dDiff);
+    ch.push(a>2?[pill("p-bad","CHECK"),`Deviation ${ew(dev)} differs ${a.toFixed(1)}° from card (${ew(cDev)}). Re-read the standard compass bowl; report to the Master if it persists.`]
+      :a>1?[pill("p-warn","MONITOR"),`Deviation differs ${a.toFixed(1)}° from card. Acceptable; monitor the trend.`]
+      :[pill("p-ok","OK"),`Deviation agrees with card (difference ${a.toFixed(1)}°).`]);}
+  if(gH!==null){const tH=gH+(gErr??0);let c=tH-variation;for(let k=0;k<4;k++)c=tH-variation-cardDev(c);
+    ch.push([pill("p-ok","GUIDE"),`Expected magnetic heading from card ≈ ${f3(c)}°${mH!==null?` (read ${f3(mH)}°)`:""}. Use only to catch a misread; always record the value actually read.`]);}
+  if(steerDiff!==null)ch.push(Math.abs(steerDiff)>2?[pill("p-warn","CHECK"),`Steering compass differs ${Math.abs(steerDiff).toFixed(1)}° from standard.`]:[pill("p-ok","OK"),`Steering compass agrees with standard (difference ${Math.abs(steerDiff).toFixed(1)}°).`]);
+  else ch.push([pill("p-warn","BLANK"),"Steering compass not entered. Steer. column stays blank; do not fill in an estimate."]);
+  $("checks").innerHTML=ch.map(c=>`<li>${c[0]}<span>${c[1]}</span></li>`).join("");
+
+  // steps
+  const s=[];
+  s.push(`GMT          = ${time||"—"} ${tz==="local"?"− 8 h":"(UTC)"} = ${gmt}`);
+  if(tb!==null)s.push(`True Brg     = WGS84 from ship to ${obj.name} = ${f3(tb)}°`);
+  if(gErr!==null)s.push(`Gyro Error   = True − Obs = ${f3(tb)} − ${f3(obs)} = ${hl(gErr)}`);
+  if(magObs!==null)s.push(`Obs Brg mag  = Obs gyro + (Mag Hdg − Gyro Hdg) = ${f3(obs)} + (${f3(mH)} − ${f3(gH)}) = ${f3(magObs)}°`);
+  if(cErr!==null)s.push(`Compass Err  = True − Obs mag = ${f3(tb)} − ${f3(magObs)} = ${ew(cErr)}`);
+  s.push(`Variation    = ${vb.toFixed(1)}° + ${yrs.toFixed(2)} yr × (${va}') = ${ew(variation)}`);
+  if(dev!==null)s.push(`Deviation    = Err − Var = ${ew(dev)}   (card: ${ew(cDev)})`);
+  $("steps").textContent=s.join("\n");
+}
+
+$("tzLocal").onclick=()=>{tz="local";$("tzLocal").classList.add("on");$("tzUtc").classList.remove("on");calc()};
+$("tzUtc").onclick=()=>{tz="utc";$("tzUtc").classList.add("on");$("tzLocal").classList.remove("on");calc()};
+$("f").addEventListener("input",calc);
+$("f").addEventListener("change",calc);
+$("f").addEventListener("submit",e=>e.preventDefault());
+$("copyBtn").onclick=()=>{const t=$("copySrc").value;
+  navigator.clipboard?.writeText(t).then(()=>{$("copyBtn").textContent="Copied"},()=>{$("copySrc").hidden=false;$("copySrc").select();$("copyBtn").textContent="Select & copy manually"})
+  ?? ($("copySrc").hidden=false,$("copySrc").select());
+  setTimeout(()=>$("copyBtn").textContent="Copy row",2000)};
+calc();
+</script>
+
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+</script>
+</body>
+</html>
