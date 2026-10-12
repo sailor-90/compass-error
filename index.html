@@ -13,162 +13,262 @@
 <meta name="apple-mobile-web-app-title" content="Compass Err">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
-/* Layout: bridge-console tool — input panel left, book row + checks right; stacks on phone */
+/* Layout: mobile = one view at a time + bottom tab bar; desktop = input left, result views right */
 :root{
-  --bg:#eef1f3; --panel:#ffffff; --ink:#15212b; --muted:#5b6b78; --line:#d3dbe1;
-  --accent:#0b6e8a; --accent-ink:#ffffff; --field:#f7f9fa;
-  --ok:#1d7a46; --ok-bg:#e3f3ea; --warn:#9a6200; --warn-bg:#fdf1d8; --bad:#b3261e; --bad-bg:#fbe4e2;
+  --bg:#e9f0f3; --bg2:#dbe8ee; --panel:#ffffff; --ink:#122029; --muted:#586a77; --line:#d6dfe5;
+  --accent:#0b6e8a; --accent2:#13a3b8; --accent-ink:#ffffff; --field:#f3f7f9;
+  --ok:#1d7a46; --ok-bg:#e1f4ea; --warn:#955c00; --warn-bg:#fdf0d4; --bad:#b3261e; --bad-bg:#fbe3e0;
+  --shadow:0 1px 2px rgba(18,32,41,.06),0 8px 24px rgba(18,32,41,.07);
+  --r:16px;
   --f-display:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
   --f-body:system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-data:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0e161c; --panel:#152129; --ink:#e3ebf0; --muted:#93a4b0; --line:#26353f;
-  --accent:#4cb6d4; --accent-ink:#06222b; --field:#101a21;
-  --ok:#6fd39a; --ok-bg:#12301f; --warn:#f0c065; --warn-bg:#33270c; --bad:#ff8f86; --bad-bg:#3a1513; color-scheme:dark}}
+  --bg:#0b1218; --bg2:#102029; --panel:#141f27; --ink:#e3ebf0; --muted:#93a4b0; --line:#25343e;
+  --accent:#4cb6d4; --accent2:#2f8fb0; --accent-ink:#06222b; --field:#0f1920;
+  --ok:#6fd39a; --ok-bg:#12301f; --warn:#f0c065; --warn-bg:#33270c; --bad:#ff8f86; --bad-bg:#3a1513;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0e161c; --panel:#152129; --ink:#e3ebf0; --muted:#93a4b0; --line:#26353f;
-  --accent:#4cb6d4; --accent-ink:#06222b; --field:#101a21;
-  --ok:#6fd39a; --ok-bg:#12301f; --warn:#f0c065; --warn-bg:#33270c; --bad:#ff8f86; --bad-bg:#3a1513; color-scheme:dark}
+  --bg:#0b1218; --bg2:#102029; --panel:#141f27; --ink:#e3ebf0; --muted:#93a4b0; --line:#25343e;
+  --accent:#4cb6d4; --accent2:#2f8fb0; --accent-ink:#06222b; --field:#0f1920;
+  --ok:#6fd39a; --ok-bg:#12301f; --warn:#f0c065; --warn-bg:#33270c; --bad:#ff8f86; --bad-bg:#3a1513;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
-:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
-.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 40px}
-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px;margin-bottom:18px}
-h1{font-family:var(--f-display);font-weight:700;font-size:1.7rem;letter-spacing:.01em;margin:0;text-wrap:balance}
-.sub{color:var(--muted);font-size:.9rem}
-.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:18px;align-items:start}
-@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px}
-h2{font-family:var(--f-display);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0 0 10px}
-.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+body{margin:0;background:var(--bg);background-image:linear-gradient(180deg,var(--bg2),var(--bg) 280px);background-repeat:no-repeat;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;padding-top:env(safe-area-inset-top,0px)}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:16px calc(104px + env(safe-area-inset-bottom,0px))}
+
+/* hero = live dashboard (compact) */
+.hero{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:20;display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;margin-bottom:14px;border-radius:18px;color:#fff;background:linear-gradient(135deg,#0b6e8a,#13a3b8);box-shadow:var(--shadow)}
+.hero-top{display:flex;align-items:center;gap:8px}
+.hero-top svg{flex:none;width:22px;height:22px}
+h1{font-family:var(--f-display);font-weight:700;font-size:1rem;letter-spacing:.01em;margin:0;line-height:1.15}
+.sub{display:none}
+.hero .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.hero .kpi{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:10px;padding:5px 6px}
+.hero .kpi::before{display:none}
+.hero .kpi .k{font-size:.58rem;letter-spacing:.05em;color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero .kpi .v{font-size:.82rem;margin-top:1px;white-space:nowrap}
+.hero .kpi .n{display:none}
+.hero .kpi.main{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;padding:6px 10px}
+.hero .kpi.main .k{flex:none}
+.hero .kpi.main .v{font-size:1.5rem;margin:0;letter-spacing:.02em}
+.hero .kpi.main .n{display:block;color:rgba(255,255,255,.85);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+@media (min-width:700px){.hero .kpis{grid-template-columns:1.6fr repeat(4,minmax(0,1fr))}.hero .kpi.main{grid-column:auto;display:block}.hero .kpi.main .n{margin-top:1px}.hero .kpi .v{font-size:1.05rem}}
+
+/* dashboard only on the Input tab (phone); always visible on wide screens where Input is always shown */
+@media (max-width:899px){body:not([data-v="input"]) .hero{display:none}}
+
+/* intro splash */
+#intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(160deg,#0a4f64,#0b6e8a 55%,#13a3b8);color:#fff;transition:opacity .55s ease,visibility .55s}
+#intro.out{opacity:0;visibility:hidden}
+#intro svg{width:132px;height:132px;overflow:visible}
+#intro .ring{stroke-dasharray:132;stroke-dashoffset:132;animation:ring .9s ease-out .1s forwards}
+#intro .ticks{opacity:0;animation:fade .4s ease .7s forwards}
+#intro .needle{transform-origin:24px 24px;animation:swing 1.3s cubic-bezier(.2,.8,.3,1) .25s both}
+#intro .t1{font-family:var(--f-display);font-weight:700;font-size:1.9rem;letter-spacing:.04em;opacity:0;transform:translateY(8px);animation:rise .6s ease .9s forwards}
+#intro .t2{font-size:.85rem;letter-spacing:.3em;text-transform:uppercase;opacity:0;animation:rise .6s ease 1.1s forwards;margin-top:-10px}
+@keyframes ring{to{stroke-dashoffset:0}}
+@keyframes fade{to{opacity:1}}
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes swing{0%{transform:rotate(-380deg)}55%{transform:rotate(14deg)}75%{transform:rotate(-6deg)}100%{transform:rotate(0)}}
+@media (prefers-reduced-motion: reduce){#intro{display:none}}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.views{display:flex;flex-direction:column;gap:16px}
+.views>[data-view]{display:none;min-width:0}
+body[data-v="input"] .views>[data-view="input"],
+body[data-v="summary"] .views>[data-view="summary"],
+body[data-v="book"] .views>[data-view="book"],
+body[data-v="working"] .views>[data-view="working"]{display:flex;flex-direction:column;gap:16px}
+h2{font-family:var(--f-display);font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin:0 0 12px;display:flex;align-items:center;gap:8px}
+h2::before{content:"";width:4px;height:14px;border-radius:2px;background:linear-gradient(var(--accent),var(--accent2))}
+h3{font-family:var(--f-display);font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:4px 0 8px}
+.grp{display:flex;flex-direction:column;gap:12px}
+.grp+.grp{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+
+/* form */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .full{grid-column:1/-1}
-label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--muted);font-weight:500;min-width:0}
-input,select{font:inherit;font-family:var(--f-data);font-size:.92rem;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:5px;padding:7px 8px;width:100%;min-width:0}
-input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.pos{display:grid;grid-template-columns:52px 1fr 58px;gap:6px}
-.trow{display:flex;gap:6px;align-items:stretch}
+label{display:flex;flex-direction:column;gap:5px;font-size:.8rem;color:var(--muted);font-weight:600;min-width:0}
+input,select{font:inherit;font-family:var(--f-data);font-size:.95rem;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 11px;width:100%;min-width:0;min-height:44px}
+input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.pos{display:grid;grid-template-columns:56px 1fr 66px;gap:8px}
+.trow{display:flex;gap:8px;align-items:stretch}
 .trow input{flex:1}
-.seg{display:flex;flex:none;border:1px solid var(--line);border-radius:5px;overflow:hidden}
-.seg button{border:0;border-radius:0;padding:6px 9px;font-size:.8rem}
-button{font:inherit;font-family:var(--f-display);font-weight:600;font-size:.9rem;border-radius:5px;padding:7px 10px;cursor:pointer;border:1px solid var(--line);background:var(--field);color:var(--ink)}
-button.on,button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.hint{font-size:.78rem;color:var(--muted)}
-.section{display:flex;flex-direction:column;gap:12px}
-.stack{display:flex;flex-direction:column;gap:18px;min-width:0}
-details{border-top:1px solid var(--line);padding-top:12px}
-summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:.85rem;color:var(--accent)}
+.seg{display:flex;flex:none;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:0 12px;font-size:.82rem;min-height:42px}
+button{font:inherit;font-family:var(--f-display);font-weight:700;font-size:.92rem;border-radius:10px;padding:9px 14px;cursor:pointer;border:1px solid var(--line);background:var(--field);color:var(--ink);min-height:42px}
+button.on,button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--accent-ink);border-color:transparent}
+.cta{width:100%;margin-top:18px;min-height:48px;font-size:1rem}
+.hint{font-size:.78rem;color:var(--muted);font-weight:400}
+details{border-top:1px dashed var(--line);margin-top:18px;padding-top:14px}
+summary{cursor:pointer;font-family:var(--f-display);font-weight:700;font-size:.88rem;color:var(--accent)}
 .card8{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-.scroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
-.book th,.book td{border:1px solid var(--ink);padding:6px 6px;text-align:center;font-size:.82rem}
-.book th{font-family:var(--f-display);font-weight:600;background:var(--field)}
-.book td{font-family:var(--f-data);font-size:.85rem;white-space:nowrap}
-.book td.rm{white-space:normal;text-align:left;font-family:var(--f-body);min-width:220px}
-.book .cap{font-family:var(--f-display);letter-spacing:.06em;font-size:.78rem}
-.blank{color:var(--muted)}
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.kpi{border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--field)}
-.kpi .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-family:var(--f-display)}
-.kpi .v{font-family:var(--f-data);font-size:1.25rem;font-weight:600;margin-top:2px}
-.kpi .n{font-size:.75rem;color:var(--muted)}
-.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.checks li{display:flex;gap:10px;align-items:flex-start;font-size:.88rem}
-.pill{flex:none;font-family:var(--f-display);font-weight:700;font-size:.72rem;letter-spacing:.06em;padding:2px 8px;border-radius:99px;margin-top:1px}
+
+/* results */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (min-width:560px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.kpi{border-radius:14px;padding:14px;background:var(--field);border:1px solid var(--line);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:linear-gradient(var(--accent),var(--accent2))}
+.kpi .k{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--f-display);font-weight:600}
+.kpi .v{font-family:var(--f-data);font-size:1.45rem;font-weight:700;margin-top:4px}
+.kpi .n{font-size:.74rem;color:var(--muted)}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.checks li{display:flex;gap:12px;align-items:flex-start;font-size:.9rem;padding:11px 12px;border-radius:12px;background:var(--field);border:1px solid var(--line)}
+.pill{flex:none;font-family:var(--f-display);font-weight:700;font-size:.7rem;letter-spacing:.07em;padding:3px 9px;border-radius:99px;margin-top:1px}
 .p-ok{background:var(--ok-bg);color:var(--ok)} .p-warn{background:var(--warn-bg);color:var(--warn)} .p-bad{background:var(--bad-bg);color:var(--bad)}
-.objs td,.objs th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:.84rem}
-.objs td.num{font-family:var(--f-data);text-align:right}
-.objs th{font-family:var(--f-display);font-weight:600;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
-.objs tr.sel td{background:var(--field);font-weight:600}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-.calc{font-family:var(--f-data);font-size:.8rem;color:var(--muted);line-height:1.7;white-space:pre-wrap;margin:0}
-.ex{display:inline-block;font-family:var(--f-display);font-size:.72rem;letter-spacing:.06em;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:2px 8px;border-radius:99px}
+
+/* book */
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.row h2{margin:0}
+.scroll{overflow-x:auto;border-radius:10px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.book th,.book td{border:1px solid var(--line);padding:8px 7px;text-align:center;font-size:.82rem}
+.book th{font-family:var(--f-display);font-weight:700;background:var(--field);color:var(--muted)}
+.book td{font-family:var(--f-data);font-size:.88rem;white-space:nowrap;font-weight:600}
+.book td.rm{white-space:normal;text-align:left;font-family:var(--f-body);font-weight:400;min-width:220px}
+.book .cap{font-family:var(--f-display);letter-spacing:.1em;font-size:.76rem;color:var(--accent);background:var(--field)}
+.blank{color:var(--muted)}
+.calc{font-family:var(--f-data);font-size:.82rem;color:var(--ink);line-height:1.8;white-space:pre-wrap;margin:0;overflow-x:auto}
+
+/* bottom tab bar */
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;gap:4px;width:min(calc(100% - 24px),520px);padding:6px;border-radius:22px;background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:transparent;color:var(--muted);padding:8px 4px;border-radius:16px;font-size:.72rem;letter-spacing:.03em;min-height:54px;position:relative}
+.tabbar svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--accent-ink)}
+.dot{position:absolute;top:7px;right:calc(50% - 20px);width:9px;height:9px;border-radius:50%;border:2px solid var(--panel);display:none}
+.dot.ok{display:block;background:var(--ok)} .dot.warn{display:block;background:#e0a21c} .dot.bad{display:block;background:var(--bad)}
+
+@media (min-width:900px){
+  .views{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:20px;align-items:start}
+  .views>[data-view="input"]{display:block!important;grid-column:1;grid-row:1}
+  .views>[data-view]:not([data-view="input"]){grid-column:2;grid-row:1}
+  body[data-v="input"] .views>[data-view="summary"]{display:flex;flex-direction:column;gap:16px}
+  .tabbar [data-v="input"]{display:none}
+  .cta{display:none}
+}
+@media (max-width:420px){.card8{grid-template-columns:repeat(2,1fr)}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
+<div id="intro" aria-hidden="true">
+  <svg viewBox="0 0 48 48"><circle class="ring" cx="24" cy="24" r="21" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" transform="rotate(-90 24 24)"/><g class="ticks" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><path d="M24 5v3M24 40v3M5 24h3M40 24h3"/></g><g class="needle"><path d="M24 9l5 15H19z" fill="#ffb347"/><path d="M24 39l-5-15h10z" fill="#fff"/></g><circle cx="24" cy="24" r="2.2" fill="#0b6e8a"/></svg>
+  <div class="t1">Compass Error</div>
+  <div class="t2">MT TITANIA</div>
+</div>
 
 <div class="wrap">
-<header>
-  <div>
-    <h1>Compass Error · MT TITANIA</h1>
-    <div class="sub">Enter the observation; results fill the compass error book columns.</div>
+<header class="hero">
+  <div class="hero-top">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="#fff" stroke-width="3"/><path d="M24 7l6 17H18z" fill="#ffb347"/><path d="M24 41l-6-17h12z" fill="#fff"/><circle cx="24" cy="24" r="2.6" fill="#0b6e8a"/></svg>
+    <div>
+      <h1>Compass Error · MT TITANIA</h1>
+      <div class="sub">Live summary · updates as you type</div>
+    </div>
   </div>
+  <div class="kpis" id="kpis"></div>
 </header>
 
-<div class="grid">
+<main class="views">
   <!-- INPUT -->
-  <form class="panel section" id="f" autocomplete="off">
+  <form class="card" id="f" data-view="input" autocomplete="off">
     <h2>Observation</h2>
-    <div class="fields">
-      <label>Date<input type="date" id="date" value="2026-10-05"></label>
-      <label>Time<span class="trow"><input type="time" id="time" value="10:58"><span class="seg" role="group" aria-label="Time zone"><button type="button" id="tzLocal" class="on" title="Local time UTC+8">LT</button><button type="button" id="tzUtc" title="Universal time">UTC</button></span></span></label>
-      <label class="full">Latitude
-        <span class="pos"><input id="latD" type="number" min="0" max="89" value="1" aria-label="Lat degrees"><input id="latM" type="number" step="0.001" min="0" max="59.999" value="17.783" aria-label="Lat minutes"><select id="latH" aria-label="N/S"><option>N</option><option>S</option></select></span>
-      </label>
-      <label class="full">Longitude
-        <span class="pos"><input id="lonD" type="number" min="0" max="179" value="103" aria-label="Long degrees"><input id="lonM" type="number" step="0.001" min="0" max="59.999" value="57.028" aria-label="Long minutes"><select id="lonH" aria-label="E/W"><option>E</option><option>W</option></select></span>
-      </label>
-      <label>Gyro heading (°)<input id="gHdg" type="number" step="0.1" value="91.3"></label>
-      <label>Magnetic heading (°)<input id="mHdg" type="number" step="0.1" value="95.2"></label>
-      <label class="full">Steering compass heading (°) <span class="hint">optional</span><input id="sHdg" type="number" step="0.1" placeholder="leave blank if not read"></label>
-      <label class="full">Object observed<select id="obj"></select></label>
-      <div class="full fields" id="customBox" hidden>
-        <label>Object lat (decimal °)<input id="cLat" type="number" step="0.00001" placeholder="1.30907"></label>
-        <label>Object long (decimal °)<input id="cLon" type="number" step="0.00001" placeholder="103.93272"></label>
-        <label class="full">Object name<input id="cName" type="text" placeholder="name on chart"></label>
+    <div class="grp">
+      <h3>Time &amp; position</h3>
+      <div class="fields">
+        <label>Date<input type="date" id="date" value="2026-10-05"></label>
+        <label>Time<span class="trow"><input type="time" id="time" value="10:58"><span class="seg" role="group" aria-label="Time zone"><button type="button" id="tzLocal" class="on" title="Local time UTC+8">LT</button><button type="button" id="tzUtc" title="Universal time">UTC</button></span></span></label>
+        <label class="full">Latitude
+          <span class="pos"><input id="latD" type="number" min="0" max="89" value="1" aria-label="Lat degrees"><input id="latM" type="number" step="0.001" min="0" max="59.999" value="17.783" aria-label="Lat minutes"><select id="latH" aria-label="N/S"><option>N</option><option>S</option></select></span>
+        </label>
+        <label class="full">Longitude
+          <span class="pos"><input id="lonD" type="number" min="0" max="179" value="103" aria-label="Long degrees"><input id="lonM" type="number" step="0.001" min="0" max="59.999" value="57.028" aria-label="Long minutes"><select id="lonH" aria-label="E/W"><option>E</option><option>W</option></select></span>
+        </label>
       </div>
-      <label class="full">Obs. gyro bearing to object (°)<input id="obs" type="number" step="0.1" placeholder="read from azimuth circle"></label>
+    </div>
+
+    <div class="grp">
+      <h3>Headings</h3>
+      <div class="fields">
+        <label>Gyro heading (°)<input id="gHdg" type="number" step="0.1" value="91.3"></label>
+        <label>Magnetic heading (°)<input id="mHdg" type="number" step="0.1" value="95.2"></label>
+        <label class="full">Steering compass heading (°) <span class="hint">optional</span><input id="sHdg" type="number" step="0.1" placeholder="leave blank if not read"></label>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h3>Object &amp; bearing</h3>
+      <div class="fields">
+        <label class="full">Object observed<select id="obj"></select></label>
+        <div class="full fields" id="customBox" hidden>
+          <label>Object lat (decimal °)<input id="cLat" type="number" step="0.00001" placeholder="1.30907"></label>
+          <label>Object long (decimal °)<input id="cLon" type="number" step="0.00001" placeholder="103.93272"></label>
+          <label class="full">Object name<input id="cName" type="text" placeholder="name on chart"></label>
+        </div>
+        <label class="full">Obs. gyro bearing to object (°)<input id="obs" type="number" step="0.1" placeholder="read from azimuth circle"></label>
+      </div>
     </div>
 
     <details>
       <summary>Variation &amp; deviation card settings</summary>
-      <div class="fields" style="margin-top:10px">
+      <div class="fields" style="margin-top:12px">
         <label>Chart variation (°, + = E)<input id="varBase" type="number" step="0.1" value="0.2"></label>
         <label>Reference year<input id="varYear" type="number" value="2020"></label>
         <label class="full">Annual change (minutes, + = towards E)<input id="varAnn" type="number" step="0.5" value="-2"></label>
       </div>
-      <p class="hint" style="margin:12px 0 0">Deviation card 18-09-26 (+ = E, − = W), linearly interpolated:</p>
+      <p class="hint" style="margin:14px 0 0">Deviation card 18-09-26 (+ = E, − = W), linearly interpolated:</p>
       <div class="card8" id="cardBox"></div>
     </details>
+
+    <button type="button" class="primary cta" id="toResult">View checks →</button>
   </form>
 
-  <!-- OUTPUT -->
-  <div class="stack">
-    <section class="panel">
-      <h2>Summary</h2>
-      <div class="kpis" id="kpis"></div>
-    </section>
+  <!-- SUMMARY -->
+  <section data-view="summary">
+    <div class="card">
+      <h2>Checks</h2>
+      <ul class="checks" id="checks"></ul>
+    </div>
+  </section>
 
-    <section class="panel">
-      <div class="row" style="margin-bottom:10px">
-        <h2 style="margin:0">Book entry</h2>
+  <!-- BOOK -->
+  <section data-view="book">
+    <div class="card">
+      <div class="row">
+        <h2>Book entry</h2>
         <button type="button" class="primary" id="copyBtn">Copy row</button>
       </div>
       <div class="scroll">
         <table class="book" id="bookMag"></table>
       </div>
-      <div class="scroll" style="margin-top:12px">
+      <div class="scroll" style="margin-top:14px">
         <table class="book" id="bookGyro"></table>
       </div>
-      <textarea id="copySrc" class="hint" style="margin-top:10px;width:100%;font-family:var(--f-data);background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:5px" rows="2" readonly hidden></textarea>
-    </section>
+      <textarea id="copySrc" class="hint" style="margin-top:10px;width:100%;font-family:var(--f-data);background:var(--field);color:var(--ink);border:1px solid var(--line);border-radius:10px" rows="2" readonly hidden></textarea>
+    </div>
+  </section>
 
-    <section class="panel">
-      <h2>Checks</h2>
-      <ul class="checks" id="checks"></ul>
-    </section>
-
-
-    <section class="panel">
+  <!-- WORKING -->
+  <section data-view="working">
+    <div class="card">
       <h2>Working</h2>
       <pre class="calc" id="steps"></pre>
-    </section>
-  </div>
+    </div>
+  </section>
+</main>
 </div>
-</div>
+
+<nav class="tabbar" aria-label="Sections">
+  <button type="button" data-v="input"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Input</button>
+  <button type="button" data-v="summary"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Checks<span class="dot" id="dot"></span></button>
+  <button type="button" data-v="book"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h11"/></svg>Book</button>
+  <button type="button" data-v="working"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Working</button>
+</nav>
 
 <script>
 const OBJECTS=[
@@ -332,11 +432,12 @@ function calc(){
 
   // KPIs
   $("kpis").innerHTML=[
-    ["Gyro error",gErr===null?"—":hl(gErr),"True − Obs gyro"],
-    ["Compass error",cErr===null?"—":ew(cErr),"True − Obs magnetic"],
+    ["True bearing",tb===null?"—":f3(tb)+"°",obj?(dist!==null?dist.toFixed(2)+" NM · ":"")+obj.name:"Select an object"],
+    ["Gyro err",gErr===null?"—":hl(gErr),"True − Obs gyro"],
+    ["Comp. err",cErr===null?"—":ew(cErr),"True − Obs magnetic"],
     ["Deviation",dev===null?"—":ew(dev),"Err − Var"],
-    ["Card at this heading",cDev===null?"—":ew(cDev),mH===null?"":"heading "+f3(mH)+"°"],
-  ].map(k=>`<div class="kpi"><div class="k">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
+    ["Card dev",cDev===null?"—":ew(cDev),mH===null?"":"heading "+f3(mH)+"°"],
+  ].map((k,i)=>`<div class="kpi${i?"":" main"}"><div class="k">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("");
 
   // remarks
   const rm=[];
@@ -394,6 +495,33 @@ $("copyBtn").onclick=()=>{const t=$("copySrc").value;
   ?? ($("copySrc").hidden=false,$("copySrc").select());
   setTimeout(()=>$("copyBtn").textContent="Copy row",2000)};
 calc();
+
+// ---- intro splash ----
+(function(){const el=$("intro");if(!el)return;let done=false;
+  const close=()=>{if(done)return;done=true;el.classList.add("out");setTimeout(()=>el.remove(),700)};
+  el.addEventListener("click",close);setTimeout(close,2500);})();
+// ---- bottom tab navigation ----
+const tabs=[...document.querySelectorAll(".tabbar button")];
+const wide=matchMedia("(min-width:900px)");
+let cur="input";
+try{const s=localStorage.getItem("ce-view");if(["input","summary","book","working"].includes(s))cur=s}catch(e){}
+function setView(v,scroll){
+  cur=v;
+  const eff=(wide.matches&&v==="input")?"summary":v;
+  document.body.dataset.v=eff;
+  tabs.forEach(b=>b.classList.toggle("on",b.dataset.v===eff));
+  try{localStorage.setItem("ce-view",v)}catch(e){}
+  if(scroll)window.scrollTo({top:0});
+}
+tabs.forEach(b=>b.addEventListener("click",()=>setView(b.dataset.v,true)));
+$("toResult").onclick=()=>setView("summary",true);
+wide.addEventListener("change",()=>setView(cur,false));
+setView(cur,false);
+// status dot on the Summary tab: worst check level
+new MutationObserver(()=>{
+  const c=$("checks"),d=$("dot");
+  d.className="dot"+(c.querySelector(".p-bad")?" bad":c.querySelector(".p-warn")?" warn":c.querySelector(".p-ok")?" ok":"");
+}).observe($("checks"),{childList:true});
 </script>
 
 <script>
